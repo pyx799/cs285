@@ -8,6 +8,8 @@ import torch
 from torch import distributions
 
 from cs285.infrastructure import pytorch_util as ptu
+from torch.distributions import Categorical
+from torch.distributions import Normal
 
 
 class MLPPolicy(nn.Module):
@@ -59,8 +61,17 @@ class MLPPolicy(nn.Module):
     def get_action(self, obs: np.ndarray) -> np.ndarray:
         """Takes a single observation (as a numpy array) and returns a single action (as a numpy array)."""
         # TODO: implement get_action
-        action = None
-
+        if self.discrete:
+            # TODO: define the forward pass for a policy with a discrete action space.
+            action_values = self.logits_net(obs)
+            dist = Categorical(logits=action_values)
+            action = dist.sample().numpy()
+        else:
+            # TODO: define the forward pass for a policy with a continuous action space.
+            mean = self.mean_net(obs)
+            std = torch.exp(self.logstd())
+            dist = Normal(mean, std)
+            action = dist.sample().numpy()
         return action
 
     def forward(self, obs: torch.FloatTensor):
@@ -71,10 +82,15 @@ class MLPPolicy(nn.Module):
         """
         if self.discrete:
             # TODO: define the forward pass for a policy with a discrete action space.
-            pass
+            action_values = self.logits_net(obs)
+            dist = Categorical(logits=action_values)
+            return dist.probs()
         else:
             # TODO: define the forward pass for a policy with a continuous action space.
-            pass
+            mean = self.mean_net(obs)
+            std = torch.exp(self.logstd())
+            dist = Normal(mean, std)
+            return dist   
         return None
 
     def update(self, obs: np.ndarray, actions: np.ndarray, *args, **kwargs) -> dict:
