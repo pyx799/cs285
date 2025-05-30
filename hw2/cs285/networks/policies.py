@@ -56,6 +56,7 @@ class MLPPolicy(nn.Module):
         )
 
         self.discrete = discrete
+        self.action_dim = ac_dim
 
     @torch.no_grad()
     def get_action(self, obs: np.ndarray) -> np.ndarray:
@@ -65,7 +66,9 @@ class MLPPolicy(nn.Module):
             # TODO: define the forward pass for a policy with a discrete action space.
             action_values = self.logits_net(obs)
             dist = Categorical(logits=action_values)
-            action = dist.probs().numpy()
+            action_index = dist.sample()
+            action = torch.zeros(self.action_dim, dtype=torch.float32, device=ptu.device)
+            action[action_index] = 1.0
         else:
             # TODO: define the forward pass for a policy with a continuous action space.
             mean = self.mean_net(obs)
