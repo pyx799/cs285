@@ -69,15 +69,16 @@ class MLPPolicy(nn.Module):
             action_index = dist.sample()
             action = torch.zeros(self.action_dim, dtype=torch.float32, device=ptu.device)
             action[action_index] = 1.0
+            action = action.numpy().detach().cpu().numpy().copy()
         else:
             # TODO: define the forward pass for a policy with a continuous action space.
             mean = self.mean_net(obs)
             std = torch.exp(self.logstd.unsqueeze(0))
             dist = Normal(mean, std)
-            action = dist.sample().numpy()
+            action = dist.sample().detach().cpu().numpy().copy()
         return action
 
-    def forward(self, obs: torch.FloatTensor):
+    def forward(self, obs: torch.FLoatTensor):
         """
         This function defines the forward pass of the network.  You can return anything you want, but you should be
         able to differentiate through it. For example, you can return a torch.FloatTensor. You can also return more
