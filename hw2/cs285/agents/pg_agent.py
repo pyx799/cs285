@@ -138,8 +138,17 @@ class PGAgent(nn.Module):
                 values = np.append(values, [0])
                 advantages = np.zeros(batch_size + 1)
 
+                pre_advantage = 0.0
                 for i in reversed(range(batch_size)):
-                    # TODO: recursively compute advantage estimates starting from timestep T.
+                    obs_tensor = torch.from_numpy(obs[i]).unsqueeze(0)
+                    value = self.critic(obs_tensor).item()
+                    if terminals[i]:
+                        advantage = rewards[i] - value
+                    else:
+                        delta_t = rewards[i] + self.gamma * values[i + 1] - value
+                        advantage = delta_t + self.gae_lambda * self.gamma * advantages[i + 1]                   # TODO: recursively compute advantage estimates starting from timestep T.
+                    values[i] = value
+                    advantages[i] = advantage
                     # HINT: use terminals to handle edge cases. terminals[i] is 1 if the state is the last in its
                     # trajectory, and 0 otherwise.
                     pass
@@ -149,7 +158,9 @@ class PGAgent(nn.Module):
 
         # TODO: normalize the advantages to have a mean of zero and a standard deviation of one within the batch
         if self.normalize_advantages:
-            pass
+            mean = np.mean(advantages)
+            std = np.std(advantages)
+            advantages = (advantages - mean) / std
 
         return advantages
 
