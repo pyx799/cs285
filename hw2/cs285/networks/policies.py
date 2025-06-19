@@ -62,14 +62,18 @@ class MLPPolicy(nn.Module):
     def get_action(self, obs: np.ndarray) -> np.ndarray:
         """Takes a single observation (as a numpy array) and returns a single action (as a numpy array)."""
         # TODO: implement get_action
+        # print(f"obs type: {type(obs)}")
+        # print(f"Numpy available: {hasattr(torch, 'from_numpy')}")
         if self.discrete:
             # TODO: define the forward pass for a policy with a discrete action space.
-            action_values = self.logits_net(obs)
+            input_obs = torch.from_numpy(obs)
+            action_values = self.logits_net(input_obs)
             dist = Categorical(logits=action_values)
-            action_index = dist.sample()
-            action = torch.zeros(self.action_dim, dtype=torch.float32, device=ptu.device)
-            action[action_index] = 1.0
-            action = action.numpy().detach().cpu().numpy().copy()
+            action = dist.sample().detach().cpu().numpy().copy()
+            # print(action)
+            # action = torch.zeros(self.action_dim, dtype=torch.float32, device=ptu.device)
+            # action[action_index] = 1.0
+            # action = action.detach().cpu().numpy().copy()
         else:
             # TODO: define the forward pass for a policy with a continuous action space.
             mean = self.mean_net(obs)
@@ -78,7 +82,7 @@ class MLPPolicy(nn.Module):
             action = dist.sample().detach().cpu().numpy().copy()
         return action
 
-    def forward(self, obs: torch.FLoatTensor):
+    def forward(self, obs: torch.FloatTensor):
         """
         This function defines the forward pass of the network.  You can return anything you want, but you should be
         able to differentiate through it. For example, you can return a torch.FloatTensor. You can also return more

@@ -80,7 +80,11 @@ def run_training_loop(args):
 
         # TODO: train the agent using the sampled trajectories and the agent's update function
         train_info: dict = None
-        agent.update()
+        observes = trajs_dict["observation"]
+        rewards = trajs_dict["reward"]
+        actions = trajs_dict["action"]
+        terminals = trajs_dict["terminal"] 
+        train_info = agent.update(observes, actions, rewards, terminals)
 
         if itr % args.scalar_log_freq == 0:
             # save eval metrics

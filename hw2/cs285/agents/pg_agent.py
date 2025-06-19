@@ -78,15 +78,16 @@ class PGAgent(nn.Module):
             obs, rewards, q_values, terminals
         )
 
+
         # step 3: use all datapoints (s_t, a_t, adv_t) to update the PG actor/policy
         # TODO: update the PG actor/policy network once using the advantages
         info: dict = None
+        info = self.actor.update(obs, actions, advantages)
 
         # step 4: if needed, use all datapoints (s_t, a_t, q_t) to update the PG critic/baseline
         if self.critic is not None:
             # TODO: perform `self.baseline_gradient_steps` updates to the critic/baseline network
             critic_info: dict = None
-
             info.update(critic_info)
 
         return info
