@@ -124,7 +124,7 @@ class MLPPolicyPG(MLPPolicy):
         log_probs = dist.log_prob(actions)
 
         # TODO: implement the policy gradient actor update.
-        loss = (advantages * log_probs).mean()
+        loss = -(advantages * log_probs).mean()
 
         self.optimizer.zero_grad()
         loss.backward()
