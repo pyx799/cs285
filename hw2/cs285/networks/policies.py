@@ -9,7 +9,7 @@ from torch import distributions
 
 from cs285.infrastructure import pytorch_util as ptu
 from torch.distributions import Categorical
-from torch.distributions import Normal
+from torch.distributions import Normal, Independent
 
 
 class MLPPolicy(nn.Module):
@@ -76,10 +76,12 @@ class MLPPolicy(nn.Module):
             # action = action.detach().cpu().numpy().copy()
         else:
             # TODO: define the forward pass for a policy with a continuous action space.
-            mean = self.mean_net(obs)
-            std = torch.exp(self.logstd.unsqueeze(0))
-            dist = Normal(mean, std)
+            mean = self.mean_net(torch.from_numpy(obs).float())
+            #print('mean shape ', mean.shape)
+            std = torch.exp(self.logstd)
+            dist = Independent(Normal(mean, std), 1)
             action = dist.sample().detach().cpu().numpy().copy()
+            #print('action shape', action.shape)
         return action
 
     def forward(self, obs: torch.FloatTensor):
@@ -97,7 +99,7 @@ class MLPPolicy(nn.Module):
             # TODO: define the forward pass for a policy with a continuous action space.
             mean = self.mean_net(obs)
             std = torch.exp(self.logstd.unsqueeze(0))
-            dist = Normal(mean, std)
+            dist = Independent(Normal(mean, std), 1)
             return dist
         return None
 
@@ -121,6 +123,9 @@ class MLPPolicyPG(MLPPolicy):
         advantages = ptu.from_numpy(advantages)
 
         dist = self.forward(obs)
+        print('action shapes ', actions.shape)
+        print('adv shapes ', advantages.shape)
+        print('log probs shapes ', dist.log_prob(actions).shape)
         log_probs = dist.log_prob(actions)
 
         # TODO: implement the policy gradient actor update.

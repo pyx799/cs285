@@ -161,8 +161,7 @@ class PGAgent(nn.Module):
         if self.normalize_advantages:
             mean = np.mean(advantages)
             std = np.std(advantages)
-            advantages = (advantages - mean) / std
-
+            advantages = (advantages - mean) / (std + 1e-10)
         return advantages
 
     def _discounted_return(self, rewards: Sequence[float]) -> Sequence[float]:
